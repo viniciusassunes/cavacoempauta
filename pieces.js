@@ -49,7 +49,7 @@ window.PIECES = [
       { chords: "Dm", notes: "F4/4 F5*4" },  // 29
       { chords: "Dm@0 Bø@4", notes: "D5*4 E5*4" },  // 30
       { chords: "Am", notes: "C5*4 D5*4" },  // 31
-      { chords: "B7@0 E7@4", notes: "B4*4 C5*4" },  // 32
+      { chords: "B7@0 E7@4", notes: "B4*4 G#4*4" },  // 32
       { chords: "Am@0 E7@4", notes: "A4/4 r/4", repeatEnd: true, volta: 1 },  // 33
       { chords: "Am@0 G7@4", notes: "A4/4 r/4", dc: true, final: true, volta: 2 }   // 34
     ]

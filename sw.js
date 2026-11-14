@@ -1,6 +1,6 @@
 // Cavaco em pauta — funciona offline depois da primeira abertura.
 // Ao mudar qualquer arquivo do app, aumente o número da versão abaixo.
-const VERSAO = 'cavaco-v4';
+const VERSAO = 'cavaco-v7';
 const ARQUIVOS = [
   './', './index.html', './leitor.js', './pieces.js', './leitor-pdf.js', './importar.js', './pdf.min.js', './pdf.worker.min.js', './Tone.js', './manifest.webmanifest',
   './samples_sync/D1.wav', './samples_sync/B2.wav', './samples_sync/G3.wav', './samples_sync/D4.wav',

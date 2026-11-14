@@ -460,7 +460,7 @@ function render(piece) {
 
 // ---------- contador e compasso inicial ----------
 let startBar = 0;
-function showCount(n) { const c = document.getElementById('counter'); if (!c) return; c.textContent = n; c.classList.toggle('on', n !== ''); c.classList.toggle('go', n === 0); }
+function showCount(n) { for (const id of ['counter', 'fabCount']) { const c = document.getElementById(id); if (!c) continue; c.textContent = n; c.classList.toggle('on', n !== ''); c.classList.toggle('go', n === 0); } }   // fabCount = espelho da contagem no celular (a barra de cima rola para fora da tela)
 function clearArmed() { document.querySelectorAll('.armed').forEach(n => n.classList.remove('armed')); }
 function armStart() {                                   // compasso marcado: a primeira nota dele já aparece em verde (com o nome na faixa)
   clearArmed();
@@ -766,6 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('playBtn').addEventListener('click', () => togglePause());
   $('restartBtn').addEventListener('click', () => restartFromStart());
+  if ($('fabRestart')) $('fabRestart').addEventListener('click', () => { $('fabRestart').blur(); restartFromStart(); });
   $('bpm').addEventListener('input', () => {
     const v = +$('bpm').value;
     if (typeof Tone !== 'undefined' && v >= 20 && v <= 240 && current) Tone.Transport.bpm.value = quarterBpm(v);

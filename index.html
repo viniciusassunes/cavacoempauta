@@ -17,7 +17,7 @@
     body { overflow-anchor: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
            background: #121214; color: #f4f4f5; margin: 0; }
     #app { display: flex; justify-content: center; align-items: flex-start; width: 100%; }
-    #side { position: sticky; top: 12px; flex: 0 0 176px; max-height: calc(100vh - 20px); overflow-y: auto; padding: 8px 4px 0 8px; box-sizing: border-box; scrollbar-width: thin; }
+    #side { position: sticky; top: 12px; flex: 0 0 176px; max-height: calc(100vh - 112px); overflow-y: auto; padding: 8px 4px 0 8px; box-sizing: border-box; scrollbar-width: thin; }
     #impBox { margin: 14px 4px 18px 8px; padding-top: 12px; border-top: 1px solid #27272a; }
     #impBtn { width: 100%; padding: 10px 8px; border-radius: 10px; border: 1px dashed #52525b; background: transparent; color: #e4e4e7; font: inherit; font-size: 13px; cursor: pointer; }
     #impBtn:hover { border-color: #a1a1aa; background: #27272a; }
@@ -170,19 +170,26 @@
       #counter { min-width: 46px; font-size: 22px; }
       label, .bpmbox { font-size: 12.5px; gap: 4px; }
     }
-    #fabPlay { display: none; }
+    #fabPlay, #fabRestart, #fabCount { display: none; }
     @media (max-width: 760px), (max-height: 520px) {
       .topbar { position: static; }
       #fabPlay { display: flex; position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 9; width: 56px; height: 56px; padding: 0; align-items: center; justify-content: center;
                  font-size: 24px; border-radius: 50%; background: #10b981; color: #064e3b; border: 2px solid #34d399; box-shadow: 0 6px 20px rgba(0,0,0,.55); touch-action: manipulation; }
       #fabPlay.on { background: #f59e0b; border-color: #fbbf24; }
+      #fabRestart { display: flex; position: fixed; bottom: 18px; left: calc(50% - 80px); z-index: 9; width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center;
+                    font-size: 22px; border-radius: 50%; background: #27272a; color: #f4f4f5; border: 2px solid #52525b; box-shadow: 0 6px 20px rgba(0,0,0,.55); touch-action: manipulation; }
+      #fabCount.on { display: flex; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 9; width: 46px; height: 46px; align-items: center; justify-content: center;
+                     font-size: 26px; font-weight: 800; border-radius: 50%; color: #1c1917; background: #fbbf24; box-shadow: 0 6px 20px rgba(0,0,0,.55); pointer-events: none; }
+      #fabCount.on.go { background: #34d399; }
     }
     @media (max-width: 420px) { .navbig { padding: 8px 12px; font-size: 14px; } }
+    @media (max-width: 380px) { .navbig { padding: 8px 10px; font-size: 13px; } }
+    @media (max-width: 340px) { .navbig { padding: 8px 8px; font-size: 12px; } #fabRestart { width: 38px; height: 38px; font-size: 20px; bottom: 21px; left: calc(50% - 68px); } }
     /* ---- como app instalado: respeita o entalhe e a barra do iPhone, sem puxar-para-atualizar ---- */
     html, body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
     body { padding-top: env(safe-area-inset-top); }
     button, select, label { -webkit-user-select: none; user-select: none; }
-    .navbig, #fabPlay { margin-bottom: env(safe-area-inset-bottom); }
+    .navbig, #fabPlay, #fabRestart, #fabCount { margin-bottom: env(safe-area-inset-bottom); }
     #side { padding-top: calc(16px + env(safe-area-inset-top)); }
   </style>
 </head>
@@ -227,13 +234,15 @@
   </div>
   </div>
   <button id="fabPlay" aria-label="Play / Pause">▶</button>
+  <button id="fabRestart" aria-label="Voltar ao início e tocar" title="Voltar ao início e tocar">↺</button>
+  <div id="fabCount" aria-hidden="true"></div>
 <button class="navbig" id="prevPiece" aria-label="Peça anterior">◀ Anterior<small></small></button>
   <button class="navbig" id="nextPiece" aria-label="Próxima peça">Próxima ▶<small></small></button>
 
-  <script src="pieces.js?v=3"></script>
+  <script src="pieces.js?v=4"></script>
   <script src="leitor-pdf.js?v=2"></script>
   <script src="importar.js?v=1"></script>
-  <script src="leitor.js?v=4"></script>
+  <script src="leitor.js?v=5"></script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>
