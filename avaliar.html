@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cavaco em pauta — ver em vários tamanhos</title>
+<style>
+body{margin:0;background:#0f0f12;color:#e4e4e7;font:15px system-ui,sans-serif;padding:20px}
+h1{font-size:20px;margin:0 0 4px}p{color:#a1a1aa;margin:0 0 20px}
+.wrap{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+figure{margin:0}figcaption{margin:0 0 8px;font-weight:600}figcaption small{font-weight:400;color:#a1a1aa}
+.frame{border:6px solid #3f3f46;border-radius:22px;overflow:hidden;background:#000}
+iframe{border:0;transform-origin:0 0;display:block}
+</style></head><body>
+<h1>Como o app aparece em cada tamanho</h1>
+<p>Cada janela abaixo é o app de verdade (dá para tocar nele). Página só para você conferir; seu amigo não precisa dela.</p>
+<div class="wrap" id="w"></div>
+<script>
+const T=[['Celular em pé',390,844,.62],['Celular deitado',844,390,.62],['Tablet em pé',820,1180,.42],['Notebook',1366,768,.45]];
+const w=document.getElementById('w');
+T.forEach(([n,W,H,s])=>{const f=document.createElement('figure');
+f.innerHTML=`<figcaption>${n} <small>${W}×${H}</small></figcaption><div class="frame" style="width:${W*s}px;height:${H*s}px"><iframe src="index.html" width="${W}" height="${H}" style="transform:scale(${s})"></iframe></div>`;w.appendChild(f);});
+</script></body></html>

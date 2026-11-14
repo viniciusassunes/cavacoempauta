@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#121214">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Cavaco">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <title>Cavaco em pauta</title>
+  <script src="Tone.js"></script>
+  <style>
+    body { overflow-anchor: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           background: #121214; color: #f4f4f5; margin: 0; }
+    #app { display: flex; justify-content: center; align-items: flex-start; width: 100%; }
+    #side { position: sticky; top: 12px; flex: 0 0 176px; max-height: calc(100vh - 20px); overflow-y: auto; padding: 8px 4px 0 8px; box-sizing: border-box; scrollbar-width: thin; }
+    #impBox { margin: 14px 4px 18px 8px; padding-top: 12px; border-top: 1px solid #27272a; }
+    #impBtn { width: 100%; padding: 10px 8px; border-radius: 10px; border: 1px dashed #52525b; background: transparent; color: #e4e4e7; font: inherit; font-size: 13px; cursor: pointer; }
+    #impBtn:hover { border-color: #a1a1aa; background: #27272a; }
+    #impBox .link { margin-top: 8px; background: none; border: 0; color: #71717a; font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; padding: 4px 0; }
+    #impMsg { margin-top: 8px; font-size: 12px; line-height: 1.4; padding: 8px 10px; border-radius: 8px; background: #27272a; color: #d4d4d8; }
+    #impMsg.erro { background: #3f1d1d; color: #fecaca; } #impMsg.ok { background: #14352a; color: #a7f3d0; }
+    #side h2 { margin: 0 0 6px 10px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #71717a; }
+    #pieceList { display: flex; flex-direction: column; gap: 2px; }
+    button.pitem { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 4px 8px; font-size: 13px; font-weight: 600;
+                   background: transparent; color: #a1a1aa; border: none; border-left: 3px solid transparent; border-radius: 6px; }
+    button.pitem:hover { background: rgba(255,255,255,.06); color: #f4f4f5; filter: none; }
+    button.pitem.on { color: #34d399; border-left-color: #34d399; background: rgba(16,185,129,.10); }
+    button.pitem .n { flex: 0 0 20px; font-size: 12px; font-weight: 700; color: #71717a; text-align: right; }
+    button.pitem.on .n { color: #34d399; }
+    button.pitem .t { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    button.pitem .c { font-size: 10.5px; font-weight: 400; color: #71717a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 1px; }
+    #main { flex: 1 1 0; min-width: 0; max-width: 1600px; box-sizing: border-box; padding: 12px 22px 130px; display: flex; flex-direction: column; align-items: center; }
+    h1 { margin: 0 0 2px; font-size: 20px; }
+    #subtitle { color: #a1a1aa; margin: 0 0 8px; font-size: 13px; min-height: 16px; }
+    .navbig { position: fixed; bottom: 16px; z-index: 8; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 170px; max-width: 280px;
+              padding: 14px 26px; font-size: 21px; font-weight: 800; border-radius: 14px; background: #10b981; color: #064e3b;
+              border: 2px solid #34d399; box-shadow: 0 6px 22px rgba(0,0,0,.55); touch-action: manipulation; }
+    .navbig small { font-size: 12px; font-weight: 600; opacity: .85; max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .navbig:disabled { opacity: .3; cursor: default; }
+    #prevPiece { left: 16px; }
+    #nextPiece { right: 16px; }
+
+    .topbar { position: sticky; top: 0; z-index: 5; width: 100%; background: #121214;
+              padding: 6px 0 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .controls { display: flex; gap: 9px; align-items: center; flex-wrap: nowrap; justify-content: space-between; width: 100%; }
+    @media (max-width: 1060px) { .controls { flex-wrap: wrap; justify-content: center; } }
+    button { padding: 8px 20px; font-size: 15px; font-weight: 600; border: none; border-radius: 6px;
+             cursor: pointer; background: #10b981; color: #064e3b; transition: background .2s; }
+    button:hover { filter: brightness(.92); }
+    #loading { color: #f59e0b; font-size: 13px; }
+    label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #d4d4d8; white-space: nowrap; }
+    input[type="number"] { -moz-appearance: textfield; appearance: textfield; width: 58px; padding: 5px; background: #27272a; border: 1px solid #3f3f46;
+                           color: #fff; border-radius: 6px; font-size: 14px; text-align: center; }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .bpmbox, .metrobox { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #d4d4d8; white-space: nowrap; }
+    button.step { padding: 0; width: 30px; height: 30px; font-size: 22px; line-height: 1; background: #27272a; color: #f4f4f5;
+                  border: 1px solid #3f3f46; user-select: none; touch-action: manipulation; }
+    button.step:hover { background: #3f3f46; filter: none; }
+    button.restart { padding: 8px 10px; font-size: 14px; background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; }
+    button.restart:hover { background: #3f3f46; filter: none; }
+    button.mini { padding: 4px 10px; font-size: 12px; font-weight: 600; margin-left: 8px; background: #27272a; color: #d4d4d8; border: 1px solid #3f3f46; }
+    input[type="range"] { width: 56px; accent-color: #10b981; }
+    #counter:empty::before { content: 'contagem'; font-size: 11px; font-weight: 600; letter-spacing: .3px; color: #71717a; }
+    #counter { min-width: 54px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+               font-size: 24px; font-weight: 800; color: #52525b; background: #1f1f23; border: 1px solid #2e2e33; border-radius: 8px; }
+    #counter.on { color: #1c1917; background: #fbbf24; border-color: #fbbf24; }
+    #counter.on.go { background: #34d399; border-color: #34d399; }
+    select { background: #27272a; border: 1px solid #3f3f46; color: #fff; border-radius: 6px; padding: 5px 6px; font-size: 13px; }
+    #pieceSel { max-width: 150px; text-overflow: ellipsis; }
+
+    .pedagogic-panel { background: #1f1f23; border: 1px solid #2e2e33; border-radius: 8px; padding: 6px 14px; box-sizing: border-box;
+                       width: 100%; display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: nowrap; }
+    .feedback-item { font-size: 13px; color: #a1a1aa; white-space: nowrap; }
+    .feedback-item strong { color: #38bdf8; font-size: 15px; margin-left: 5px; }
+    .feedback-item .oct { color: #a78bfa; font-size: 12px; font-weight: 700; margin-left: 8px; }
+    @media (max-width: 760px) { .pedagogic-panel { flex-wrap: wrap; justify-content: center; } }
+
+    #error { background: #451a1a; border: 1px solid #b91c1c; color: #fecaca; border-radius: 8px;
+             padding: 12px 16px; width: 100%; box-sizing: border-box; margin-bottom: 14px; font-size: 14px; }
+
+    .sheet-card { background: #fff; border-radius: 12px; padding: 16px 20px; box-shadow: 0 16px 40px rgba(0,0,0,.6);
+                  width: 100%; box-sizing: border-box; }
+    svg { display: block; width: 100%; height: auto; }
+    .ghost-legend svg { display: inline-block; width: 22px; height: 12px; flex: none; }
+
+    .staff-line { stroke: #18181b; stroke-width: 0.8; }
+    .bar-line   { stroke: #18181b; stroke-width: 0.95; }
+    .thick-bar  { stroke: #18181b; stroke-width: 3.6; }
+    .dot        { fill: #18181b; }
+    .glyph      { fill: #18181b; }
+    .chord      { font-family: serif; font-size: 22px; font-weight: bold; fill: #18181b; }
+    .chord-q    { font-size: 15px; }
+    .time-sig   { font-family: serif; font-size: 32px; font-weight: bold; fill: #18181b; }
+    .volta      { fill: none; stroke: #18181b; stroke-width: 0.9; }
+    .volta-text { font-family: serif; font-size: 13px; fill: #18181b; }
+    .mark       { font-family: serif; font-size: 14px; font-style: italic; font-weight: bold; fill: #18181b; }
+    .tie        { fill: none; stroke: #18181b; stroke-width: 1.3; stroke-linecap: round; }
+    .tuplet     { font-family: serif; font-style: italic; font-weight: bold; font-size: 14px; fill: #18181b; }
+    .stem       { stroke-width: 1.1; stroke-linecap: square; }
+    /* notas que não estão tocando: cinza escuro apagado (ficam legíveis, sem competir com a nota da vez) */
+    .notehead   { fill: #6b6b75; cursor: pointer; transition: fill .04s; }
+    .notehead.open { fill: #fff; stroke: #6b6b75; stroke-width: 1.8; }
+    .stem       { stroke: #6b6b75; }
+    .beam, .glyph.ng, .dot.ng { fill: #6b6b75; }
+    .notehead:hover { fill: #0284c7; }
+    .notehead.open:hover { fill: #bae6fd; }
+    .notehead.playing { fill: #15803d !important; }
+    .ghost-note { fill: rgba(124,58,237,.20); stroke: #7c3aed; stroke-width: 2.2; stroke-dasharray: 3.2 3.2; pointer-events: none; }
+    .ghost-note.playing { fill: rgba(124,58,237,.7); stroke: #5b21b6; }
+    .ghost-legend { margin-top: 6px; font-size: 12px; color: #52525b; display: flex; align-items: center; gap: 6px; }
+    .ghost-ledger { stroke: #7c3aed; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .reading-track { fill: #e5e7eb; }
+    .reading-track.alt { fill: #d9dce3; }
+    .note-sep { fill: none; stroke: #9aa0ac; stroke-width: 1.5; stroke-linecap: round; pointer-events: none; }
+    .beat-sep { stroke: #b4b9c4; stroke-width: 1; stroke-linecap: round; pointer-events: none; }
+    .barnum { font-family: serif; font-style: italic; font-size: 12px; fill: #18181b; }
+    .note-lab { font-size: var(--fs, 12px); letter-spacing: -.4px; font-weight: 800; fill: #646a75; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+    .note-lab.playing, .note-lab.armed { font-size: 22px; font-weight: 900; fill: #15803d; paint-order: stroke; stroke: #e5e7eb; stroke-width: 3.5px; stroke-linejoin: round; }
+    .notehead.armed { fill: #15803d !important; }
+    .ghost-note.armed { fill: rgba(124,58,237,.7); stroke: #5b21b6; }
+    .active-note-text { font-size: 18px; font-weight: 800; letter-spacing: .6px; fill: #15803d;
+                        text-anchor: middle; dominant-baseline: central; opacity: 0; pointer-events: none; }
+
+    /* ---- responsivo ---- */
+    html { -webkit-text-size-adjust: 100%; }
+    #menuBtn { display: none; }
+    @media (max-width: 900px) {
+      #menuBtn { display: inline-block; }
+      #side { position: fixed; left: 0; top: 0; height: 100vh; max-height: none; width: 250px; flex: none; z-index: 30; background: #18181b;
+              padding: 16px 8px 0 10px; transform: translateX(-104%); transition: transform .18s ease; overflow-y: auto; }
+      #side.open { transform: none; box-shadow: 8px 0 30px rgba(0,0,0,.55); }
+      #main { padding: 10px 12px 120px; }
+    }
+    @media (max-width: 760px) {
+      h1 { font-size: 17px; }
+      #subtitle { font-size: 12px; margin-bottom: 6px; }
+      .topbar { gap: 6px; padding: 4px 0 6px; }
+      .controls { gap: 6px 8px; }
+      .controls button { padding: 7px 12px; font-size: 14px; }
+      .controls button.step { padding: 0; width: 32px; height: 32px; }
+      #counter { height: 32px; min-width: 48px; font-size: 20px; }
+      input[type="range"] { width: 70px; }
+      .pedagogic-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; padding: 6px 10px; }
+      .feedback-item { font-size: 12px; } .feedback-item strong { font-size: 13px; }
+      .feedback-item button.mini { margin-left: 4px; padding: 3px 7px; }
+      .sheet-card { padding: 10px 6px; border-radius: 8px; }
+      .navbig { min-width: 0; padding: 9px 16px; font-size: 16px; bottom: 10px; border-radius: 12px; }
+      .ghost-legend { display: block; line-height: 1.45; }
+      .ghost-legend svg { vertical-align: middle; margin-right: 4px; }
+      .navbig small { display: none; }
+      #prevPiece { left: 10px; } #nextPiece { right: 10px; }
+    }
+    @media (max-height: 520px) {
+      .navbig { min-width: 0; padding: 8px 14px; font-size: 15px; bottom: 8px; border-radius: 12px; }
+      .navbig small { display: none; }
+      #prevPiece { left: 10px; } #nextPiece { right: 10px; }
+    }
+    .controls button { white-space: nowrap; }
+    @media (max-width: 1300px) and (min-width: 761px) {
+      .controls { gap: 6px; }
+      .controls button { padding: 7px 11px; font-size: 14px; }
+      .controls button.step { padding: 0; width: 28px; height: 28px; }
+      .controls select { font-size: 12.5px; padding: 4px 4px; }
+      input[type="number"] { width: 48px; } input[type="range"] { width: 44px; }
+      #counter { min-width: 46px; font-size: 22px; }
+      label, .bpmbox { font-size: 12.5px; gap: 4px; }
+    }
+    #fabPlay { display: none; }
+    @media (max-width: 760px), (max-height: 520px) {
+      .topbar { position: static; }
+      #fabPlay { display: flex; position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 9; width: 56px; height: 56px; padding: 0; align-items: center; justify-content: center;
+                 font-size: 24px; border-radius: 50%; background: #10b981; color: #064e3b; border: 2px solid #34d399; box-shadow: 0 6px 20px rgba(0,0,0,.55); touch-action: manipulation; }
+      #fabPlay.on { background: #f59e0b; border-color: #fbbf24; }
+    }
+    @media (max-width: 420px) { .navbig { padding: 8px 12px; font-size: 14px; } }
+    /* ---- como app instalado: respeita o entalhe e a barra do iPhone, sem puxar-para-atualizar ---- */
+    html, body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+    body { padding-top: env(safe-area-inset-top); }
+    button, select, label { -webkit-user-select: none; user-select: none; }
+    .navbig, #fabPlay { margin-bottom: env(safe-area-inset-bottom); }
+    #side { padding-top: calc(16px + env(safe-area-inset-top)); }
+  </style>
+</head>
+<body>
+    <div id="app">
+  <aside id="side"><h2>Peças · fácil → difícil</h2><div id="pieceList"></div></aside>
+  <div id="main">
+  <h1 id="title">Cavaco em pauta</h1>
+  <p id="subtitle"></p>
+
+  <div class="topbar">
+    <div class="controls">
+      <button id="menuBtn" class="restart" title="Lista de peças">☰ Peças</button>
+      <select id="pieceSel" aria-label="Peça" style="display:none"></select>
+      <div id="loading">Carregando timbres do cavaco...</div>
+      <button id="playBtn" style="display:none" title="Play / Pause (Espaço)">Play</button>
+      <button id="restartBtn" class="restart" style="display:none" title="Recomeçar do início (Backspace / Delete)">↺ Início</button>
+      <div id="counter" title="Contagem regressiva (1, 0) antes de a música começar"></div>
+      <div class="bpmbox">BPM
+        <button class="step" id="bpmDown" aria-label="Diminuir BPM">−</button>
+        <input type="number" id="bpm" value="55" min="20" max="240">
+        <button class="step" id="bpmUp" aria-label="Aumentar BPM">+</button>
+      </div>
+      <div class="metrobox"><label><input type="checkbox" id="metro" checked> Metrônomo</label>
+        <input type="range" id="metroVol" min="0" max="100" value="65" title="Volume do metrônomo e da contagem" aria-label="Volume do metrônomo"></div>
+      <label><input type="checkbox" id="loop" checked> Repetir</label>
+      <label>Rolagem <select id="scrollMode"><option value="p2">2 linhas por vez</option><option value="pagina">3 linhas por vez</option><option value="suave">linha a linha</option><option value="manual">manual</option></select></label>
+      <label title="Timbre do cavaco: Natural = som cru da gravação, sem reverb nem filtro">Som <select id="soundSel"><option value="natural">Natural</option><option value="suave">Suave</option><option value="antigo">Antigo</option></select></label>
+    </div>
+    <div class="pedagogic-panel">
+      <div class="feedback-item">Compasso: <strong id="fbBar">-</strong></div>
+      <div class="feedback-item" title="Clique num compasso da partitura para começar dali">Começar em: <strong id="fbStart">1</strong><button class="mini" id="startReset">do início</button></div>
+      <div class="feedback-item">Nota: <strong id="fbNote">-</strong></div>
+      <div class="feedback-item">No cavaco: <strong id="fbFret">-</strong><span class="oct" id="fbOct"></span></div>
+    </div>
+  </div>
+
+  <div id="error" hidden></div>
+  <div class="sheet-card"><svg id="score" viewBox="0 0 940 200"></svg><div class="ghost-legend"><svg width="22" height="12" viewBox="0 0 22 12"><ellipse cx="11" cy="6" rx="6" ry="4.5" transform="rotate(-20 11 6)" class="ghost-note"/></svg> nota roxa pontilhada = a nota que você toca no cavaco (uma oitava acima do que está escrito)</div>
+    <div class="ghost-legend">▸ clique num espaço vazio de um compasso para começar dali (clique de novo nele para desmarcar) · teclas <b>←</b> <b>→</b>: voltar / avançar um compasso (com <b>Shift</b>: uma linha). Tocando, recomeça dali. <b>Espaço</b>: pausa / continua do compasso onde parou · <b>Backspace</b> (<b>delete</b> no Mac): recomeça do início.</div></div>
+
+  </div>
+  </div>
+  <button id="fabPlay" aria-label="Play / Pause">▶</button>
+<button class="navbig" id="prevPiece" aria-label="Peça anterior">◀ Anterior<small></small></button>
+  <button class="navbig" id="nextPiece" aria-label="Próxima peça">Próxima ▶<small></small></button>
+
+  <script src="pieces.js?v=3"></script>
+  <script src="leitor-pdf.js?v=2"></script>
+  <script src="importar.js?v=1"></script>
+  <script src="leitor.js?v=4"></script>
+<script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+</body>
+</html>
